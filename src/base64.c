@@ -76,6 +76,13 @@ ushort_t base64_encoded_padding(size_t size) {
 	return remainder / 2;
 }
 
+void dump_bin(uchar_t data) {
+	printf("0b");
+	for (char i = 7; i > 0; i--) {
+		printf("%d", (data >> i) & 1);
+	}
+}
+
 /**
  * char* base64_encode(char* input_buffer, size_t* size);
  *
@@ -99,25 +106,28 @@ char* base64_encode(char* input_buffer, size_t size) {
 	}
 
 	// process each input ASCII char and write to output buffer
-	size_t  input_index    = 0;
-	size_t  output_index   = 0;
- 	uchar_t temp_buffer    = 0;
-	uchar_t remaining_bits = 0;
-	uchar_t dropped_bits   = 0;
+	size_t  input_index    = 0; // current index in input buffer
+	size_t  output_index   = 0; // current index in output buffer
+ 	uchar_t temp_buffer    = 0; // temporary buffer to store bits as they are processed
+	uchar_t remaining_bits = 0; // bits not consumed in last iteration
+	uchar_t dropped_bits   = 0; // bits dropped (by shift) when loading next chunk
 	while (input_index < size) {
-		printf("input_index: %lu, output_index: %lu\n", input_index, output_index); // DEBUG
+		printf("temp buffer: ");
+		dump_bin(temp_buffer);
+		printf("\ninput_index: %lu, output_index: %lu\n", input_index, output_index); // DEBUG
+
 		// load next chunk of bits into temp buffer
 		temp_buffer <<= BYTE_BITS - remaining_bits;
 		temp_buffer |= input_buffer[input_index] >> remaining_bits;
+		
 		dropped_bits = remaining_bits;
-
-		// reset remaining bits
 		remaining_bits = BYTE_BITS - remaining_bits;
 
 		// output the next chunk of bits
+		printf("%d -> %c\n", (int)(temp_buffer>>2), output_buffer[output_index]); // DEBUG
+
 		output_buffer[output_index] = encode_ascii_char(temp_buffer >> 2);
 		remaining_bits -= 6;
-		printf("%d -> %c\n", (int)temp_buffer, output_buffer[output_index]); // DEBUG
 		output_index++;
 
 		if (dropped_bits != 0) {
