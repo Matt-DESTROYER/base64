@@ -112,28 +112,44 @@ char* base64_encode(char* input_buffer, size_t size) {
 	uchar_t remaining_bits = 0; // bits not consumed in last iteration
 	uchar_t dropped_bits   = 0; // bits dropped (by shift) when loading next chunk
 	while (input_index < size) {
+		// [DEBUG]
 		printf("temp buffer: ");
 		dump_bin(temp_buffer);
-		printf("\ninput_index: %lu, output_index: %lu\n", input_index, output_index); // DEBUG
+		printf("\ninput_index: %lu, output_index: %lu\n", input_index, output_index);
 
 		// load next chunk of bits into temp buffer
-		temp_buffer <<= BYTE_BITS - remaining_bits;
 		temp_buffer |= input_buffer[input_index] >> remaining_bits;
 		
-		dropped_bits = remaining_bits;
-		remaining_bits = BYTE_BITS - remaining_bits;
+		dropped_bits = remaining_bits; // remember how many bits were dropped
+		remaining_bits = BYTE_BITS;    // the buffer has been refilled
 
 		// output the next chunk of bits
-		printf("%d -> %c\n", (int)(temp_buffer>>2), output_buffer[output_index]); // DEBUG
+		// [DEBUG]
+		printf("%d -> %c\n", (int)(temp_buffer>>2), output_buffer[output_index]);
 
-		output_buffer[output_index] = encode_ascii_char(temp_buffer >> 2);
-		remaining_bits -= 6;
+		output_buffer[output_index] = encode_ascii_char(temp_buffer >> 2); // encode the next 6 bits
+
+		remaining_bits -= BASE64_CHAR_BITS;
+		temp_buffer <<= BASE64_CHAR_BITS;
+
 		output_index++;
 
-		if (dropped_bits != 0) {
-			temp_buffer <<= dropped_bits;
-			ushort_t shift = BYTE_BITS - dropped_bits;
-			temp_buffer |= (input_buffer[input_index] << shift) >> shift;
+		while (dropped_bits != 0) {
+			uchar_t shift = BYTE_BITS - dropped_bits;
+			temp_buffer |= (input_buffer[input_index] << shift) >> remaining_bits;
+
+			dropped_bits = remaining_bits;
+			remaining_bits = ;
+			
+			// [DEBUG]
+			printf("%d -> %c\n", (int)(temp_buffer>>2), output_buffer[output_index]);
+			
+			output_buffer[output_index] = encode_ascii_char(temp_buffer >> 2); // encode the next 6 bits
+			
+			remaining_bits -= BASE64_CHAR_BITS;
+			temp_buffer <<= BASE64_CHAR_BITS;
+			
+			output_index++;
 		}
 		input_index++;
 	}
