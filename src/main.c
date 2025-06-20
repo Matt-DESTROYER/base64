@@ -18,6 +18,14 @@ int main(int argc, char* argv[]) {
 	}
 
 	printf("Encoded Base64: %s\n", encoded_string);
+    for (size_t i = 0; i < input_length; i++) {
+        printf("0b");
+        for (char j = 7; j >= 0; j--) {
+            printf("%d", (input_string[i] >> j) & 1);
+        }
+        printf(" ");
+    }
+    printf("\n");
 
 	free(encoded_string);
 
