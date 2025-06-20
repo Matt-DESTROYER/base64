@@ -63,7 +63,7 @@ char* base64_encode(char* input_buffer, size_t size) {
 	// apply padding
 	ushort_t padding = base64_encoded_padding(size);
 	for (ushort_t i = 0; i < padding; i++) {
-		output_buffer[output_size - i - 1] = '=';
+		output_buffer[output_size - i - 1] = (uchar_t)'=';
 	}
 
 	// process each input ASCII char and write to output buffer
@@ -72,7 +72,6 @@ char* base64_encode(char* input_buffer, size_t size) {
  	uchar_t temp_buffer    = 0; // temporary buffer to store bits as they are processed
 	uchar_t remaining_bits = 0; // bits not consumed in last iteration
 	uchar_t dropped_bits   = 0; // bits dropped (by shift) when loading next chunk
-	printf("%d %d %d\n\n\n\n", 'M', 'a', 'n');
 	while (input_index < size) {
 		// [DEBUG]
 		printf("Processing input[%zu]: %c\n", input_index, (uchar_t)input_buffer[input_index]);

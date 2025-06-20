@@ -18,12 +18,9 @@ int main(int argc, char* argv[]) {
 	}
 
 	printf("Encoded Base64: %s\n", encoded_string);
-    for (size_t i = 0; i < input_length; i++) {
-        printf("0b");
-        for (char j = 7; j >= 0; j--) {
-            printf("%d", (input_string[i] >> j) & 1);
-        }
-        printf(" ");
+    size_t encoded_length = base64_encoded_size(input_length);
+    for (size_t i = 0; i < encoded_length; i++) {
+        printf("%d ", encoded_string[i]);
     }
     printf("\n");
 
