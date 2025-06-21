@@ -1,7 +1,17 @@
-// [DEBUG]
-#include <stdio.h>
-// [\DEBUG]
 #include "./base64.h"
+
+/**
+ * char base64_char_to_ascii_char(uchar_t chr);
+ * 
+ * Converts a Base64 character (0-63) to its ASCII representation.
+ */
+char base64_char_to_ascii_char(uchar_t chr) {
+	// handle somehow invalid characters
+	if (chr > BASE64_CHAR_COUNT) {
+		return '\0';
+	}
+	return BASE64_CHAR_TABLE[chr];
+}
 
 /*
  * size_t base64_encoded_size(size_t size);
@@ -37,12 +47,14 @@ ushort_t base64_encoded_padding(size_t size) {
 	return remainder / 2;
 }
 
+/*
 void dump_bin(uchar_t data) {
 	printf("0b");
 	for (char i = 7; i > 0; i--) {
 		printf("%d", (data >> i) & 1);
 	}
 }
+*/
 
 /**
  * char* base64_encode(char* input_buffer, size_t* size);
@@ -63,7 +75,7 @@ char* base64_encode(char* input_buffer, size_t size) {
 	// apply padding
 	ushort_t padding = base64_encoded_padding(size);
 	for (ushort_t i = 0; i < padding; i++) {
-		output_buffer[output_size - i - 1] = (uchar_t)'=';
+		output_buffer[output_size - i - 1] = BASE64_PAD_CHAR;
 	}
 
 	// process each input ASCII char and write to output buffer
@@ -73,9 +85,6 @@ char* base64_encode(char* input_buffer, size_t size) {
 	uchar_t remaining_bits = 0; // bits not consumed in last iteration
 	uchar_t dropped_bits   = 0; // bits dropped (by shift) when loading next chunk
 	while (input_index < size) {
-		// [DEBUG]
-		printf("Processing input[%zu]: %c\n", input_index, (uchar_t)input_buffer[input_index]);
-		// [\DEBUG]
 		dropped_bits = BYTE_BITS;
 		while (dropped_bits > 0) {
 			uchar_t shift = BYTE_BITS - dropped_bits;
@@ -90,14 +99,10 @@ char* base64_encode(char* input_buffer, size_t size) {
 			dropped_bits -= consumable;
 			remaining_bits += consumable;
 			
-			if (remaining_bits >= BASE64_CHAR_BITS) { // only try to encode the next char if we have enough bits
-				output_buffer[output_index] = temp_buffer >> (BYTE_BITS - BASE64_CHAR_BITS); // encode the next 6 bits
-				// [DEBUG]
-				printf("temp_buffer: ");
-				dump_bin(temp_buffer >> (BYTE_BITS - BASE64_CHAR_BITS));
-				printf("\n");
-				printf("%d -> %d\n", (char)(temp_buffer >> (BYTE_BITS - BASE64_CHAR_BITS)), output_buffer[output_index]);
-				// [\DEBUG]
+			// only try to encode the next char if we have enough bits
+			if (remaining_bits >= BASE64_CHAR_BITS) {
+				// encode the next 6 bits
+				output_buffer[output_index] = base64_char_to_ascii_char(temp_buffer >> (BYTE_BITS - BASE64_CHAR_BITS));
 
 				output_index++;
 
@@ -108,7 +113,7 @@ char* base64_encode(char* input_buffer, size_t size) {
 		input_index++;
 	}
 	if (remaining_bits > 0) {
-		output_buffer[output_index] = temp_buffer;
+		output_buffer[output_index] = temp_buffer >> (BYTE_BITS - BASE64_CHAR_BITS);
 		output_index++;
 	}
 	

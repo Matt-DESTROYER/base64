@@ -9,6 +9,10 @@ typedef unsigned short ushort_t; // unsigned short type
 #define BYTE_BITS        8 // number of bits in a byte
 #define BASE64_CHAR_BITS 6 // number of bits in a base64 character
 
+#define BASE64_CHAR_TABLE "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+#define BASE64_CHAR_COUNT 64
+#define BASE64_PAD_CHAR   (uchar_t)'='
+
 char encode_ascii_char(char chr);
 char decode_base64_char(char chr);
 size_t base64_encoded_size(size_t size);
