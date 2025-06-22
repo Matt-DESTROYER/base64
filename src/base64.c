@@ -47,15 +47,6 @@ ushort_t base64_encoded_padding(size_t size) {
 	return remainder / 2;
 }
 
-/*
-void dump_bin(uchar_t data) {
-	printf("0b");
-	for (char i = 7; i > 0; i--) {
-		printf("%d", (data >> i) & 1);
-	}
-}
-*/
-
 /**
  * char* base64_encode(char* input_buffer, size_t* size);
  *
@@ -98,7 +89,7 @@ char* base64_encode(char* input_buffer, size_t size) {
 
 			dropped_bits -= consumable;
 			remaining_bits += consumable;
-			
+
 			// only try to encode the next char if we have enough bits
 			if (remaining_bits >= BASE64_CHAR_BITS) {
 				// encode the next 6 bits
