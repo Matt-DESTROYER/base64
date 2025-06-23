@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 #include "base64.h"
-
 void dump_bin(uchar_t data) {
 	printf("0b");
 	for (char i = 7; i > 0; i--) {

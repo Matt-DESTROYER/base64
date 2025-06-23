@@ -104,7 +104,7 @@ char* base64_encode(char* input_buffer, size_t size) {
 		input_index++;
 	}
 	if (remaining_bits > 0) {
-		output_buffer[output_index] = temp_buffer >> (BYTE_BITS - BASE64_CHAR_BITS);
+		output_buffer[output_index] = base64_char_to_ascii_char(temp_buffer >> (BYTE_BITS - BASE64_CHAR_BITS));
 		output_index++;
 	}
 	
