@@ -1,6 +1,7 @@
-#include <stdio.h>
+#include <stdio.h> // DEBUG
 #include <string.h>
 #include "base64.h"
+
 void dump_bin(uchar_t data) {
 	printf("0b");
 	for (char i = 7; i > 0; i--) {
@@ -15,7 +16,6 @@ int main(int argc, char* argv[]) {
 	}
 
 	char* input_string = argv[1];
-
 	size_t input_length = strlen(input_string);
 	char* encoded_string = base64_encode(input_string, input_length);
 	if (encoded_string == NULL) {
