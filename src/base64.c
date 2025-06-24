@@ -22,27 +22,29 @@ char base64_char_to_ascii_char(uchar_t chr) {
 size_t base64_encoded_size(size_t size) {
 	size_t bits = size * BYTE_BITS;
 
-	ushort_t remainder = 6 - (bits % 6);
-	if (remainder == 6)
+	uchar_t remainder = 6 - (uchar_t)(bits % 6);
+	if (remainder == 6) {
 		remainder = 0;
+	}
 
-	ushort_t padding = remainder / 2;
+	uchar_t padding = remainder / 2;
 
 	return ((bits + remainder) / 6) + padding;
 }
 
 /**
- * ushort_t base64_encoded_padding(size_t size);
+ * uchar_t base64_encoded_padding(size_t size);
  *
  * Calculates the number of padding characters needed for some content to be
  * encoded in Base64, given its `size` in bytes.
  */
-ushort_t base64_encoded_padding(size_t size) {
+uchar_t base64_encoded_padding(size_t size) {
 	size_t bits = size * BYTE_BITS;
 
-	ushort_t remainder = 6 - (bits % 6);
-	if (remainder == 6)
+	uchar_t remainder = 6 - (uchar_t)(bits % 6);
+	if (remainder == 6) {
 		remainder = 0;
+	}
 
 	return remainder / 2;
 }
@@ -57,15 +59,15 @@ char* base64_encode(char* input_buffer, size_t size) {
 	// allocate memory for output buffer
 	size_t output_size = base64_encoded_size(size);
 
-	char* output_buffer = (char*)calloc(output_size + 1, sizeof(char));
+	char* output_buffer = (char*)malloc((output_size + 1) * sizeof(char));
 	if (output_buffer == NULL) {
 		return NULL;
 	}
-	output_buffer[output_size] = '\0'; // Null-terminate the string
+	output_buffer[output_size] = '\0'; // null-terminate the string
 
 	// apply padding
-	ushort_t padding = base64_encoded_padding(size);
-	for (ushort_t i = 0; i < padding; i++) {
+	uchar_t padding = base64_encoded_padding(size);
+	for (uchar_t i = 0; i < padding; i++) {
 		output_buffer[output_size - i - 1] = BASE64_PAD_CHAR;
 	}
 
@@ -98,12 +100,13 @@ char* base64_encode(char* input_buffer, size_t size) {
 				output_index++;
 
 				temp_buffer <<= BASE64_CHAR_BITS;
-				remaining_bits = BYTE_BITS - BASE64_CHAR_BITS; // buffer was refilled and bits were consumed
+				remaining_bits -= BASE64_CHAR_BITS; // buffer was refilled and bits were consumed
 			}
 		}
 		input_index++;
 	}
-	if (remaining_bits > 0) {
+
+	if (padding > 0) {
 		output_buffer[output_index] = base64_char_to_ascii_char(temp_buffer >> (BYTE_BITS - BASE64_CHAR_BITS));
 		output_index++;
 	}

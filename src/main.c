@@ -1,10 +1,9 @@
-#include <stdio.h> // DEBUG
+#include <stdio.h>
 #include <string.h>
 #include "base64.h"
 
 void dump_bin(uchar_t data) {
-	printf("0b");
-	for (char i = 7; i > 0; i--) {
+	for (char i = 7; i >= 0; i--) {
 		printf("%d", (data >> i) & 1);
 	}
 }
@@ -17,13 +16,12 @@ int main(int argc, char* argv[]) {
 
 	char* input_string = argv[1];
 	size_t input_length = strlen(input_string);
+
 	char* encoded_string = base64_encode(input_string, input_length);
 	if (encoded_string == NULL) {
 		fprintf(stderr, "Error encoding string to Base64.\n");
 		return EXIT_FAILURE;
 	}
-
-	printf("Encoded Base64: %s\n", encoded_string);
 
 	size_t encoded_length = strlen(encoded_string);
 	size_t expected_length = base64_encoded_size(input_length);
@@ -33,16 +31,7 @@ int main(int argc, char* argv[]) {
 		return EXIT_FAILURE;
 	}
 
-	for (size_t i = 0; i < encoded_length; i++) {
-		printf("%d ", encoded_string[i]);
-	}
-	printf("\n");
-
-	for (size_t i = 0; i < encoded_length; i++) {
-		dump_bin(encoded_string[i]);
-		printf(" ");
-	}
-	printf("\n");
+	printf("%s\n", encoded_string);
 
 	free(encoded_string);
 
