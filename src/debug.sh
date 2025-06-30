@@ -1,5 +1,7 @@
 #!/bin/bash
 
+. ./detect-runner.sh
+
 echo "Running valgrind check..."
 echo ""
 echo "============================================================"
