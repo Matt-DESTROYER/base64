@@ -19,12 +19,25 @@ jobs:
             c_compiler: gcc
           - os: macos-latest
             c_compiler: clang
+        exclude:
+          - os: windows-latest
+            c_compiler: gcc
+          - os: windows-latest
+            c_compiler: clang
+          - os: ubuntu-latest
+            c_compiler: clang
+          - os: ubuntu-latest
+            c_compiler: cl
+          - os: macos-latest
+            c_compiler: gcc
+          - os: macos-latest
+            c_compiler: cl
 
     steps:
     - uses: actions/checkout@v4
 
     - name: Build
       working-directory: ./src
-      run: >
-        export C_COMPILER="${{ matrix.c_compiler }}
+      run: \
+        export C_COMPILER="${{ matrix.c_compiler }}"
         ./build.sh
