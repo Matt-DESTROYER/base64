@@ -41,15 +41,15 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - if: runner.os == 'Windows'
-      uses: TheMrMilchmann/setup-msvc-dev@v3.0.1
-
     - name: Pull repo
       run: git pull
 
     - name: Build
       working-directory: ./src
       run: |
+        if [ "$RUNNER_OS" = "Windows" ]; then
+          "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat"
+        fi
         export C_COMPILER="${{ matrix.c_compiler }}"
         ./build.sh
 
