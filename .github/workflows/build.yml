@@ -16,27 +16,21 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         build_type: [Release]
-        c_compiler: [gcc, clang, cl]
+        c_compiler: [gcc, clang]
         include:
           - os: windows-latest
-            c_compiler: cl
+            c_compiler: gcc
           - os: ubuntu-latest
             c_compiler: gcc
           - os: macos-latest
             c_compiler: clang
         exclude:
           - os: windows-latest
-            c_compiler: gcc
-          - os: windows-latest
             c_compiler: clang
           - os: ubuntu-latest
             c_compiler: clang
-          - os: ubuntu-latest
-            c_compiler: cl
           - os: macos-latest
             c_compiler: gcc
-          - os: macos-latest
-            c_compiler: cl
 
     steps:
     - uses: actions/checkout@v4
@@ -47,9 +41,6 @@ jobs:
     - name: Build
       working-directory: ./src
       run: |
-        if [ "$RUNNER_OS" = "Windows" ]; then
-          "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat"
-        fi
         export C_COMPILER="${{ matrix.c_compiler }}"
         ./build.sh
 
