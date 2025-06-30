@@ -1,16 +1,33 @@
 #include "./base64.h"
-
+ 
 /**
  * char base64_char_to_ascii_char(uchar_t chr);
  * 
  * Converts a Base64 character (0-63) to its ASCII representation.
  */
 char base64_char_to_ascii_char(uchar_t chr) {
-	// handle somehow invalid characters
+	// handle invalid characters
 	if (chr > BASE64_CHAR_COUNT) {
-		return '\0';
+		return INVALID_CHAR;
 	}
 	return BASE64_CHAR_TABLE[chr];
+}
+
+uchar_t ascii_char_to_base64_char(char chr) {
+	// handle invalid characters
+	if ((chr < 'A' || chr > 'Z') && 
+		(chr < 'a' || chr > 'z') && 
+		(chr < '0' || chr > '9') && 
+		chr != '+' && 
+		chr != '/') {
+		return INVALID_CHAR; // invalid character
+	}
+	for (uchar_t i = 0; i < BASE64_CHAR_COUNT; i++) {
+		if (BASE64_CHAR_TABLE[i] == chr) {
+			return i; // return the index of the character in the Base64 table
+		}
+	}
+	return INVALID_CHAR; // character not found in Base64 table
 }
 
 /*
@@ -63,7 +80,7 @@ char* base64_encode(char* input_buffer, size_t size) {
 	if (output_buffer == NULL) {
 		return NULL;
 	}
-	output_buffer[output_size] = '\0'; // null-terminate the string
+	output_buffer[output_size] = INVALID_CHAR; // null-terminate the string
 
 	// apply padding
 	uchar_t padding = base64_encoded_padding(size);
@@ -112,4 +129,13 @@ char* base64_encode(char* input_buffer, size_t size) {
 	}
 	
 	return output_buffer;
+}
+
+/**
+ * char* base64_decode(char* input_buffer, size_t size);
+ * 
+ * Decodes a Base64 encoded string from `input_buffer` of given `size`.
+ */
+char* base64_decode(char* input_buffer, size_t size) {
+	return NULL;
 }

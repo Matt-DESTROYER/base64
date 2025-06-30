@@ -2,15 +2,9 @@
 #include <string.h>
 #include "base64.h"
 
-void dump_bin(uchar_t data) {
-	for (char i = 7; i >= 0; i--) {
-		printf("%d", (data >> i) & 1);
-	}
-}
-
 int main(int argc, char* argv[]) {
 	if (argc < 2) {
-		fprintf(stderr, "Usage: %s <input_string>\n", argv[0]);
+		fprintf(stderr, "Usage:\n1. %s <input_string>\n2. %s --file <path/to/input_file.ext>\n", argv[0], argv[0]);
 		return EXIT_FAILURE;
 	}
 
