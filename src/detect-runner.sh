@@ -28,3 +28,8 @@ if [ -z "${ARCH:-}" ]; then
 		export ARCH="arm"
 	fi
 fi
+
+export EXT=""
+if [ "$OSTYPE" = "Windows" ]; then
+	export EXT=".exe"
+fi
