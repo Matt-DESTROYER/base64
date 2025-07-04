@@ -8,7 +8,7 @@
 char base64_char_to_ascii_char(uchar_t chr) {
 	// handle invalid characters
 	if (chr > BASE64_CHAR_COUNT) {
-		return INVALID_CHAR;
+		return NULL_CHAR;
 	}
 	return BASE64_CHAR_TABLE[chr];
 }
@@ -20,14 +20,31 @@ uchar_t ascii_char_to_base64_char(char chr) {
 		(chr < '0' || chr > '9') && 
 		chr != '+' && 
 		chr != '/') {
-		return INVALID_CHAR; // invalid character
+		return NULL_CHAR; // invalid character
 	}
 	for (uchar_t i = 0; i < BASE64_CHAR_COUNT; i++) {
 		if (BASE64_CHAR_TABLE[i] == chr) {
 			return i; // return the index of the character in the Base64 table
 		}
 	}
-	return INVALID_CHAR; // character not found in Base64 table
+	return NULL_CHAR; // character not found in Base64 table
+}
+
+/**
+ * uchar_t base64_encoded_padding(size_t size);
+ *
+ * Calculates the number of padding characters needed for some content to be
+ * encoded in Base64, given its `size` in bytes.
+ */
+uchar_t base64_encoded_padding(size_t size) {
+	size_t bits = size * BYTE_BITS;
+
+	uchar_t remainder = 6 - (uchar_t)(bits % 6);
+	if (remainder == 6) {
+		remainder = 0;
+	}
+
+	return remainder / 2;
 }
 
 /*
@@ -50,23 +67,6 @@ size_t base64_encoded_size(size_t size) {
 }
 
 /**
- * uchar_t base64_encoded_padding(size_t size);
- *
- * Calculates the number of padding characters needed for some content to be
- * encoded in Base64, given its `size` in bytes.
- */
-uchar_t base64_encoded_padding(size_t size) {
-	size_t bits = size * BYTE_BITS;
-
-	uchar_t remainder = 6 - (uchar_t)(bits % 6);
-	if (remainder == 6) {
-		remainder = 0;
-	}
-
-	return remainder / 2;
-}
-
-/**
  * char* base64_encode(char* input_buffer, size_t* size);
  *
  * Returns a pointer to a buffer containing the contents of the `input_buffer`
@@ -80,7 +80,7 @@ char* base64_encode(char* input_buffer, size_t size) {
 	if (output_buffer == NULL) {
 		return NULL;
 	}
-	output_buffer[output_size] = INVALID_CHAR; // null-terminate the string
+	output_buffer[output_size] = NULL_CHAR; // null-terminate the string
 
 	// apply padding
 	uchar_t padding = base64_encoded_padding(size);
@@ -132,10 +132,73 @@ char* base64_encode(char* input_buffer, size_t size) {
 }
 
 /**
+ * uchar_t base64_decoded_padding(char* buffer, size_t size);
+ *
+ * Calculates the number of padding characters in a Base64 encoded string
+ * of given `size` in bytes.
+ */
+uchar_t base64_decoded_padding(char* buffer, size_t size) {
+	// calculate the number of padding characters
+	uchar_t padding;
+	// is `(BYTE_BITS - BASE64_CHAR_BITS)` coincidentally the right number or does this make sense???
+	for (padding = 0; padding < (BYTE_BITS - BASE64_CHAR_BITS); padding++) {
+		if (buffer[size - padding - 1] != BASE64_PAD_CHAR) {
+			break;
+		}
+	}
+
+	return padding;
+}
+
+/**
+ * size_t base64_decoded_size(char* buffer, size_t size);
+ *
+ * Calculates the output size of decoding a Base64 encoded string of given
+ * `size` in bytes.
+ */
+size_t base64_decoded_size(char* buffer, size_t size) {
+	uchar_t padding = base64_decoded_padding(buffer, size);
+
+	size_t bits = (size - padding) * BASE64_CHAR_BITS;
+
+	return bits / BYTE_BITS;
+}
+
+/**
  * char* base64_decode(char* input_buffer, size_t size);
  * 
  * Decodes a Base64 encoded string from `input_buffer` of given `size`.
  */
 char* base64_decode(char* input_buffer, size_t size) {
-	return NULL;
+	// allocate memory for output buffer
+	size_t output_size = base64_decoded_size(input_buffer, size);
+
+	char* output_buffer = (char*)malloc((output_size + 1) * sizeof(char));
+	if (output_buffer == NULL) {
+		return NULL;
+	}
+	output_buffer[output_size] = NULL_CHAR; // null-terminate the string
+
+	// process each input Base64 char and write to output buffer
+	size_t  input_index    = 0; // current index in input buffer
+	size_t  output_index   = 0; // current index in output buffer
+ 	uchar_t temp_buffer    = 0; // temporary buffer to store bits as they are processed
+	uchar_t remaining_bits = 0; // bits not consumed in last iteration
+	while (input_index < size) {
+		temp_buffer |= ascii_char_to_base64_char(input_buffer[input_index]) << remaining_bits;
+
+		remaining_bits += BASE64_CHAR_BITS;
+
+		if (remaining_bits >= BYTE_BITS) {
+			output_buffer[output_index] = temp_buffer >> (remaining_bits - BYTE_BITS);
+			output_index++;
+
+			temp_buffer <<= BYTE_BITS;
+			remaining_bits -= BYTE_BITS; // buffer was refilled and bits were consumed
+		}
+
+		input_index++;
+	}
+
+	return output_buffer;
 }

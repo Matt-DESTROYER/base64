@@ -12,10 +12,13 @@ typedef unsigned char  uchar_t;  // unsigned char type
 #define BASE64_CHAR_COUNT 64
 #define BASE64_PAD_CHAR   (uchar_t)'='
 
-#define INVALID_CHAR      '\0' // invalid character
+#define NULL_CHAR      '\0' // invalid character
 
-size_t base64_encoded_size(size_t size);
 uchar_t base64_encoded_padding(size_t size);
+size_t base64_encoded_size(size_t size);
 char* base64_encode(char* input_buffer, size_t size);
+uchar_t base64_decoded_padding(char* buffer, size_t size);
+size_t base64_decoded_size(char* buffer, size_t size);
+char* base64_decode(char* input_buffer, size_t size);
 
 #endif

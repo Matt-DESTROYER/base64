@@ -2,22 +2,27 @@
 #include <string.h>
 #include "base64.h"
 
+#define USAGE_MESSAGE "Usage:\n%s -f,--flags <input_string>\nFlags:\n * -f, --file  Specifies that the input is a file, not text to be encoded.\n * -d, --decode  Specifies the input should be decoded, not encoded.\n"
+
 int main(int argc, char* argv[]) {
 	if (argc < 2) {
-		fprintf(stderr, "Usage:\n1. %s <input_string>\n2. %s --file <path/to/input_file.ext>\n", argv[0], argv[0]);
+		fprintf(stderr, "Error: No input provided.\n");
+		fprintf(stderr, USAGE_MESSAGE, argv[0]);
 		return EXIT_FAILURE;
 	}
 
 	uchar_t file_flag = 0;
+	uchar_t decode_flag = 0;
 
 	for (int i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "--file") == 0 || strcmp(argv[i], "-f") == 0) {
-			if (file_flag) {
-				fprintf(stderr, "Error: Multiple input files provided.\n");
-				return EXIT_FAILURE;
-			}
-			
 			file_flag = 1;
+		} else if (strcmp(argv[i], "--decode") == 0 || strcmp(argv[i], "-d") == 0) {
+			decode_flag = 1;
+		} else if (argv[i][0] == '-') {
+			fprintf(stderr, "Error: Unknown flag '%s'.\n", argv[i]);
+			fprintf(stderr, USAGE_MESSAGE, argv[0]);
+			return EXIT_FAILURE;
 		}
 	}
 
@@ -64,23 +69,45 @@ int main(int argc, char* argv[]) {
 		input_length = strlen(input_string);
 	}
 
-	char* encoded_string = base64_encode(input_string, input_length);
-	if (encoded_string == NULL) {
-		fprintf(stderr, "Error encoding string to Base64.\n");
-		return EXIT_FAILURE;
-	}
+	if (decode_flag) {
+		char* decoded_string = base64_decode(input_string, input_length);
+		if (decoded_string == NULL) {
+			fprintf(stderr, "Error decoding Base64 string.\n");
+			return EXIT_FAILURE;
+		}
 
-	size_t encoded_length = strlen(encoded_string);
-	size_t expected_length = base64_encoded_size(input_length);
-	if (encoded_length != expected_length) {
+		size_t decoded_length = strlen(decoded_string);
+		size_t expected_length = base64_decoded_size(input_string, input_length);
+		if (decoded_length != expected_length) {
+			free(decoded_string);
+			fprintf(stderr, "Error: Decoded length does not match expected length.\n");
+			return EXIT_FAILURE;
+		}
+
+		printf("%s\n", decoded_string);
+
+		free(decoded_string);
+		free(input_string);
+		return EXIT_SUCCESS;
+	} else {
+		char* encoded_string = base64_encode(input_string, input_length);
+		if (encoded_string == NULL) {
+			fprintf(stderr, "Error encoding string to Base64.\n");
+			return EXIT_FAILURE;
+		}
+
+		size_t encoded_length = strlen(encoded_string);
+		size_t expected_length = base64_encoded_size(input_length);
+		if (encoded_length != expected_length) {
+			free(encoded_string);
+			fprintf(stderr, "Error: Encoded length does not match expected length.\n");
+			return EXIT_FAILURE;
+		}
+
+		printf("%s\n", encoded_string);
+
 		free(encoded_string);
-		fprintf(stderr, "Error: Encoded length does not match expected length.\n");
-		return EXIT_FAILURE;
 	}
-
-	printf("%s\n", encoded_string);
-
-	free(encoded_string);
 
 	return EXIT_SUCCESS;
 }
