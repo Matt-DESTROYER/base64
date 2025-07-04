@@ -22,40 +22,42 @@ fi
 echo ""
 echo "Running test cases."
 tests=("Man" "Ma" "M" "Many hands make light work." "light work." "light work" "light wor" "light wo" "light w")
-expected=("TWFu" "TWE=" "TQ==" "TWFueSBoYW5kcyBtYWtlIGxpZ2h0IHdvcmsu" "bGlnaHQgd29yay4=" "bGlnaHQgd29yaw==" "bGlnaHQgd29y" "bGlnaHQgd28=" "bGlnaHQgdw==")
 
 for i in "${!tests[@]}"; do
 	test="${tests[$i]}"
 	echo ""
 	echo "Testing '$test'"
 
-	output=$(../build/$RUNNER_OS/$ARCH/base64$EXT "$test" | tr -d '\n') # tr -d '\n' to remove potential trailing newlines
+	output=$(../build/$RUNNER_OS/$ARCH/base64$EXT "$test" | tr -d '\n')
+	expected=$(echo -n "$test" | base64 | tr -d '\n')
 
-	if [ "$output" == "${expected[$i]}" ]; then
+	if [ "$output" == "$expected" ]; then
 		echo "Test passed!"
 		passed_checks=$((passed_checks + 1))
 	else
 		echo "Test failed..."
 		echo "Output: '$output'"
-		echo "Expected: '${expected[$i]}'"
+		echo "Expected: '$expected'"
 		failed_checks=$((failed_checks + 1))
 	fi
 done
 
 echo ""
-if [ ! -f man_test.txt ]; then
-    echo "Man" > man_test.txt
-fi
-output=$(../build/$RUNNER_OS/$ARCH/base64$EXT --file -f ./man_test.txt | tr -d '\n') # tr -d '\n' to remove potential trailing newlines
-if [ "$output" == "TWFuCgA=" ]; then
-	echo "File input test passed!"
-	passed_checks=$((passed_checks + 1))
-else
-	echo "File input test failed..."
-	echo "Output: '$output'"
-	echo "Expected: 'TWFuCgA='"
-	failed_checks=$((failed_checks + 1))
-fi
+echo "Running file tests"
+find "../tests" -type f -print0 | while IFS= read -r -d $'\0' file; do
+	output=$(../build/$RUNNER_OS/$ARCH/base64$EXT -f "$file" | tr -d '\n') # tr -d '\n' to remove potential trailing newlines
+	expected=$(base64 "../tests/$file" | tr -d '\n')
+
+	if [ "$output" == "$expected" ]; then
+		echo "Test passed!"
+		passed_checks=$((passed_checks + 1))
+	else
+		echo "Test failed..."
+		echo "Output: '$output'"
+		echo "Expected: '$expected'"
+		failed_checks=$((failed_checks + 1))
+	fi
+done
 
 echo ""
 echo "Passed $passed_checks of $((passed_checks + failed_checks)) checks."
